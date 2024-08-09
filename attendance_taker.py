@@ -139,17 +139,17 @@ class Face_Recognizer:
     #  cv2 window / putText on cv2 window
     def draw_note(self, img_rd):
         #  / Add some info on windows
-        cv2.putText(img_rd, "Face Recognizer with Deep Learning", (20, 40), self.font, 1, (255, 255, 255), 1, cv2.LINE_AA)
-        cv2.putText(img_rd, "Frame:  " + str(self.frame_cnt), (20, 100), self.font, 0.8, (0, 255, 0), 1,
+        cv2.putText(img_rd, "FIS - Izdihar Campus - Middle&High School - Boys - Camera G1", (20, 40), self.font, 1.5, (0, 0, 0), 3, cv2.LINE_AA)
+        cv2.putText(img_rd, "Frame:  " + str(self.frame_cnt), (20, 100), self.font, 0.8, (0, 0, 0), 1,
                     cv2.LINE_AA)
-        cv2.putText(img_rd, "FPS:    " + str(self.fps.__round__(2)), (20, 130), self.font, 0.8, (0, 255, 0), 1,
+        cv2.putText(img_rd, "FPS:    " + str(self.fps.__round__(2)), (20, 130), self.font, 0.8, (0, 0, 0), 1,
                     cv2.LINE_AA)
-        cv2.putText(img_rd, "Faces:  " + str(self.current_frame_face_cnt), (20, 160), self.font, 0.8, (0, 255, 0), 1,
+        cv2.putText(img_rd, "Student count:  " + str(self.current_frame_face_cnt), (20, 160), self.font, 0.8, (0, 0, 255), 2,
                     cv2.LINE_AA)
-        cv2.putText(img_rd, "Q: Quit", (20, 450), self.font, 0.8, (255, 255, 255), 1, cv2.LINE_AA)
+        cv2.putText(img_rd, "Q: Quit", (20, 450), self.font, 0.8, (255, 255, 255), 2, cv2.LINE_AA)
 
         for i in range(len(self.current_frame_face_name_list)):
-            img_rd = cv2.putText(img_rd, "Face_" + str(i + 1), tuple(
+            img_rd = cv2.putText(img_rd, "Student_" + str(i + 1), tuple(
                 [int(self.current_frame_face_centroid_list[i][0]), int(self.current_frame_face_centroid_list[i][1])]),
                                  self.font,
                                  0.8, (255, 190, 0),
