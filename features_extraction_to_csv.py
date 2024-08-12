@@ -66,8 +66,8 @@ def return_features_mean_personX(path_face_personX):
 
 def main():
     logging.basicConfig(level=logging.INFO)
-    #  Get the order of latest person
-    person_list = os.listdir("data/data_faces_from_camera/")
+    # Get the order of latest person
+    person_list = [d for d in os.listdir("data/data_faces_from_camera/") if os.path.isdir(os.path.join("data/data_faces_from_camera/", d))]
     person_list.sort()
 
     with open("data/features_all.csv", "w", newline="") as csvfile:

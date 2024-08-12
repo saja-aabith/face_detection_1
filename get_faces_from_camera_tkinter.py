@@ -153,18 +153,14 @@ class Face_Register:
 
     # Start from person_x+1
     def check_existing_faces_cnt(self):
-        if os.listdir("data/data_faces_from_camera/"):
-            # Get the order of latest person
-            person_list = os.listdir("data/data_faces_from_camera/")
-            person_num_list = []
-            for person in person_list:
-                person_order = person.split('_')[1].split('_')[0]
+        person_num_list = []
+        path_to_faces_directory = "data/data_faces_from_camera/"
+        for person_order in os.listdir(path_to_faces_directory):
+            try:
                 person_num_list.append(int(person_order))
-            self.existing_faces_cnt = max(person_num_list)
-
-        # Start from person_1
-        else:
-            self.existing_faces_cnt = 0
+            except ValueError:
+                logging.warning(f"Invalid person order: {person_order}")
+        self.existing_faces_cnt = len(person_num_list)
 
     # Update FPS of Video stream
     def update_fps(self):
