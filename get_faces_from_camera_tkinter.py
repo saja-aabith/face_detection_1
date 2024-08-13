@@ -8,23 +8,22 @@ import logging
 import tkinter as tk
 from tkinter import font as tkFont
 from PIL import Image, ImageTk
+import requests
 
 # Use frontal face detector of Dlib
 detector = dlib.get_frontal_face_detector()
 
-
 class Face_Register:
     def __init__(self):
-
-        self.current_frame_faces_cnt = 0  #  cnt for counting faces in current frame
+        self.current_frame_faces_cnt = 0  # cnt for counting faces in current frame
         self.existing_faces_cnt = 0  # cnt for counting saved faces
-        self.ss_cnt = 0  #  cnt for screen shots
+        self.ss_cnt = 0  # cnt for screen shots
 
         # Tkinter GUI
         self.win = tk.Tk()
         self.win.title("Face Register")
 
-        # PLease modify window size here if needed
+        # Please modify window size here if needed
         self.win.geometry("1000x500")
 
         # GUI left part
@@ -71,13 +70,11 @@ class Face_Register:
         self.fps_show = 0
         self.start_time = time.time()
 
-        self.cap = cv2.VideoCapture(0)  # Get video stream from camera
+        # IP camera settings
+        self.ip_camera_url = "rtsp://192.168.1.1:554/Streaming/Channels"  # Update this URL
+        self.auth = ("username", "password")  # Update with your camera's credentials if required
 
-        # self.cap = cv2.VideoCapture("test.mp4")   # Input local video
-
-    #  Delete old face folders
     def GUI_clear_data(self):
-        #  "/data_faces_from_camera/person_x/"...
         folders_rd = os.listdir(self.path_photos_from_camera)
         for i in range(len(folders_rd)):
             shutil.rmtree(self.path_photos_from_camera + folders_rd[i])
@@ -85,7 +82,7 @@ class Face_Register:
             os.remove("data/features_all.csv")
         self.label_cnt_face_in_database['text'] = "0"
         self.existing_faces_cnt = 0
-        self.log_all["text"] = "Face images and `features_all.csv` removed!"
+        self.log_all["text"] = "Face images and features_all.csv removed!"
 
     def GUI_get_input_name(self):
         self.input_name_char = self.input_name.get()
@@ -109,7 +106,6 @@ class Face_Register:
 
         self.label_warning.grid(row=4, column=0, columnspan=3, sticky=tk.W, padx=5, pady=2)
 
-        # Step 1: Clear old data
         tk.Label(self.frame_right_info,
                  font=self.font_step_title,
                  text="Step 1: Clear face photos").grid(row=5, column=0, columnspan=2, sticky=tk.W, padx=5, pady=20)
@@ -117,7 +113,6 @@ class Face_Register:
                   text='Clear',
                   command=self.GUI_clear_data).grid(row=6, column=0, columnspan=3, sticky=tk.W, padx=5, pady=2)
 
-        # Step 2: Input name and create folders for face
         tk.Label(self.frame_right_info,
                  font=self.font_step_title,
                  text="Step 2: Input name").grid(row=7, column=0, columnspan=2, sticky=tk.W, padx=5, pady=20)
@@ -129,7 +124,6 @@ class Face_Register:
                   text='Input',
                   command=self.GUI_get_input_name).grid(row=8, column=2, padx=5)
 
-        # Step 3: Save current face in frame
         tk.Label(self.frame_right_info,
                  font=self.font_step_title,
                  text="Step 3: Save face image").grid(row=9, column=0, columnspan=2, sticky=tk.W, padx=5, pady=20)
@@ -138,34 +132,25 @@ class Face_Register:
                   text='Save current face',
                   command=self.save_current_face).grid(row=10, column=0, columnspan=3, sticky=tk.W)
 
-        # Show log in GUI
         self.log_all.grid(row=11, column=0, columnspan=20, sticky=tk.W, padx=5, pady=20)
 
         self.frame_right_info.pack()
 
-    # Mkdir for saving photos and csv
     def pre_work_mkdir(self):
-        # Create folders to save face images and csv
-        if os.path.isdir(self.path_photos_from_camera):
-            pass
-        else:
+        if not os.path.isdir(self.path_photos_from_camera):
             os.mkdir(self.path_photos_from_camera)
 
-    # Start from person_x+1
     def check_existing_faces_cnt(self):
         person_num_list = []
-        path_to_faces_directory = "data/data_faces_from_camera/"
-        for person_order in os.listdir(path_to_faces_directory):
+        for person_order in os.listdir(self.path_photos_from_camera):
             try:
-                person_num_list.append(int(person_order))
-            except ValueError:
-                logging.warning(f"Invalid person order: {person_order}")
-        self.existing_faces_cnt = len(person_num_list)
+                person_num_list.append(int(person_order.split('_')[1]))
+            except:
+                pass
+        self.existing_faces_cnt = max(person_num_list) if person_num_list else 0
 
-    # Update FPS of Video stream
     def update_fps(self):
         now = time.time()
-        #  Refresh fps per second
         if str(self.start_time).split(".")[0] != str(now).split(".")[0]:
             self.fps_show = self.fps
         self.start_time = now
@@ -173,10 +158,9 @@ class Face_Register:
         self.fps = 1.0 / self.frame_time
         self.frame_start_time = now
 
-        self.label_fps_info["text"] = str(self.fps.__round__(2))
+        self.label_fps_info["text"] = str(self.fps._round_(2))
 
     def create_face_folder(self):
-        #  Create the folders for saving faces
         self.existing_faces_cnt += 1
         if self.input_name_char:
             self.current_face_dir = self.path_photos_from_camera + \
@@ -189,15 +173,14 @@ class Face_Register:
         self.log_all["text"] = "\"" + self.current_face_dir + "/\" created!"
         logging.info("\n%-40s %s", "Create folders:", self.current_face_dir)
 
-        self.ss_cnt = 0  #  Clear the cnt of screen shots
-        self.face_folder_created_flag = True  # Face folder already created
+        self.ss_cnt = 0
+        self.face_folder_created_flag = True
 
     def save_current_face(self):
         if self.face_folder_created_flag:
             if self.current_frame_faces_cnt == 1:
                 if not self.out_of_range_flag:
                     self.ss_cnt += 1
-                    #  Create blank image according to the size of face detected
                     self.face_ROI_image = np.zeros((int(self.face_ROI_height * 2), self.face_ROI_width * 2, 3),
                                                    np.uint8)
                     for ii in range(self.face_ROI_height * 2):
@@ -220,34 +203,42 @@ class Face_Register:
 
     def get_frame(self):
         try:
-            if self.cap.isOpened():
-                ret, frame = self.cap.read()
-                frame = cv2.resize(frame, (640,480))
-                return ret, cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        except:
-            print("Error: No video input!!!")
+            response = requests.get(self.ip_camera_url, stream=True, timeout=5)
+            if response.status_code == 200:
+                image_bytes = bytes()
+                for chunk in response.iter_content(chunk_size=1024):
+                    image_bytes += chunk
+                    a = image_bytes.find(b'\xff\xd8')
+                    b = image_bytes.find(b'\xff\xd9')
+                    if a != -1 and b != -1:
+                        jpg = image_bytes[a:b+2]
+                        image_bytes = image_bytes[b+2:]
+                        frame = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
+                        frame = cv2.resize(frame, (640, 480))
+                        return True, cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            return False, None
+        except Exception as e:
+            print(f"Error: {str(e)}")
+            return False, None
 
-    #  Main process of face detection and saving
     def process(self):
         ret, self.current_frame = self.get_frame()
-        faces = detector(self.current_frame, 0)
-        # Get frame
         if ret:
+            faces = detector(self.current_frame, 0)
+            self.current_frame_faces_cnt = len(faces)
+
             self.update_fps()
-            self.label_face_cnt["text"] = str(len(faces))
-            #  Face detected
-            if len(faces) != 0:
-                #   Show the ROI of faces
+            self.label_face_cnt["text"] = str(self.current_frame_faces_cnt)
+
+            if self.current_frame_faces_cnt != 0:
                 for k, d in enumerate(faces):
                     self.face_ROI_width_start = d.left()
                     self.face_ROI_height_start = d.top()
-                    #  Compute the size of rectangle box
                     self.face_ROI_height = (d.bottom() - d.top())
                     self.face_ROI_width = (d.right() - d.left())
                     self.hh = int(self.face_ROI_height / 2)
                     self.ww = int(self.face_ROI_width / 2)
 
-                    # If the size of ROI > 480x640
                     if (d.right() + self.ww) > 640 or (d.bottom() + self.hh > 480) or (d.left() - self.ww < 0) or (
                             d.top() - self.hh < 0):
                         self.label_warning["text"] = "OUT OF RANGE"
@@ -262,15 +253,12 @@ class Face_Register:
                                                        tuple([d.left() - self.ww, d.top() - self.hh]),
                                                        tuple([d.right() + self.ww, d.bottom() + self.hh]),
                                                        color_rectangle, 2)
-            self.current_frame_faces_cnt = len(faces)
 
-            # Convert PIL.Image.Image to PIL.Image.PhotoImage
             img_Image = Image.fromarray(self.current_frame)
             img_PhotoImage = ImageTk.PhotoImage(image=img_Image)
             self.label.img_tk = img_PhotoImage
             self.label.configure(image=img_PhotoImage)
 
-        # Refresh frame
         self.win.after(20, self.process)
 
     def run(self):
@@ -280,12 +268,10 @@ class Face_Register:
         self.process()
         self.win.mainloop()
 
-
 def main():
     logging.basicConfig(level=logging.INFO)
     Face_Register_con = Face_Register()
     Face_Register_con.run()
-
 
 if __name__ == '__main__':
     main()
