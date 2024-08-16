@@ -317,6 +317,7 @@ class Face_Recognizer:
     
 
 
+# self.process(cap of all 16 cameras)
     def run(self):
         # cap = cv2.VideoCapture("video.mp4")  # Get video stream from video file
         cap = cv2.VideoCapture(0)              # Get video stream from camera
