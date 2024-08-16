@@ -139,7 +139,9 @@ class Face_Register:
             try:
                 person_num_list.append(int(person_order.split('_')[1]))
                 self.existing_faces_cnt = max(person_num_list) if person_num_list else 0
-            except:
+            except Exception as e:
+                # Handle the specific exception
+                logging.error("An error occurred: %s", str(e))
                 pass
 
     def create_face_folder(self):
@@ -166,6 +168,8 @@ class Face_Register:
                         self.face_ROI_width_start-self.ww:self.face_ROI_width_start+self.face_ROI_width+self.ww
                     ]
                     self.face_ROI_image = cv2.resize(self.face_ROI_image, (self.face_ROI_width * 2, self.face_ROI_height * 2))
+                    # Convert from BGR to RGB
+                    self.face_ROI_image = cv2.cvtColor(self.face_ROI_image, cv2.COLOR_BGR2RGB)
                     cv2.imwrite(f"{self.current_face_dir}/img_face_{self.ss_cnt}.jpg", self.face_ROI_image)
                     self.log_all["text"] = f"\"{self.current_face_dir}/img_face_{self.ss_cnt}.jpg\" saved!"
                     logging.info("%-40s %s/img_face_%s.jpg", "Save into：", self.current_face_dir, self.ss_cnt)

@@ -37,62 +37,32 @@ conn.close()
 class Face_Recognizer:
     def __init__(self):
         self.font = cv2.FONT_ITALIC
-
-        # FPS
-        self.frame_time = 0
-        self.frame_start_time = 0
-        self.fps = 0
-        self.fps_show = 0
-        self.start_time = time.time()
-
-        # cnt for frame
+        self.frame_start_time = time.time()
         self.frame_cnt = 0
-
-        #  Save the features of faces in the database
         self.face_features_known_list = []
-        # / Save the name of faces in the database
         self.face_name_known_list = []
-
-        #  List to save centroid positions of ROI in frame N-1 and N
-        self.last_frame_face_centroid_list = []
-        self.current_frame_face_centroid_list = []
-
-        # List to save names of objects in frame N-1 and N
-        self.last_frame_face_name_list = []
-        self.current_frame_face_name_list = []
-
-        #  cnt for faces in frame N-1 and N
-        self.last_frame_face_cnt = 0
+        # IP camera settings
+        self.ip_camera_url = "rtsp://192.168.8.89:554/stream1"
+        self.username = "admin123"
+        self.password = "password123"
+        self.cap = None
         self.current_frame_face_cnt = 0
-
-        # Save the e-distance for faceX when recognizing
-        self.current_frame_face_X_e_distance_list = []
-
-        # Save the positions and names of current faces captured
-        self.current_frame_face_position_list = []
-        #  Save the features of people in current frame
-        self.current_frame_face_feature_list = []
-
-        # e distance between centroid of ROI in last and current frame
-        self.last_current_frame_centroid_e_distance = 0
-
-        #  Reclassify after 'reclassify_interval' frames
-        self.reclassify_interval_cnt = 0
-        self.reclassify_interval = 10
-
+        self.last_frame_face_cnt = 0
+        self.current_frame_face_name_list = []
+        self.last_frame_face_name_list = []
+        self.current_frame_face_centroid_list = []
+        self.fps = 0
+        self.reclassify_interval = 10  # Initialize reclassify_interval with an appropriate value
+        
     #  "features_all.csv"  / Get known faces from "features_all.csv"
     def get_face_database(self):
         if os.path.exists("data/features_all.csv"):
-            path_features_known_csv = "data/features_all.csv"
-            csv_rd = pd.read_csv(path_features_known_csv, header=None)
+            csv_rd = pd.read_csv("data/features_all.csv", header=None)
             for i in range(csv_rd.shape[0]):
                 features_someone_arr = []
                 self.face_name_known_list.append(csv_rd.iloc[i][0])
                 for j in range(1, 129):
-                    if csv_rd.iloc[i][j] == '':
-                        features_someone_arr.append('0')
-                    else:
-                        features_someone_arr.append(csv_rd.iloc[i][j])
+                    features_someone_arr.append(csv_rd.iloc[i][j] if csv_rd.iloc[i][j] != '' else '0')
                 self.face_features_known_list.append(features_someone_arr)
             logging.info("Faces in Database： %d", len(self.face_features_known_list))
             return 1
@@ -105,7 +75,7 @@ class Face_Recognizer:
     def update_fps(self):
         now = time.time()
         # Refresh fps per second
-        if str(self.start_time).split(".")[0] != str(now).split(".")[0]:
+        if str(self.frame_start_time).split(".")[0] != str(now).split(".")[0]:
             self.fps_show = self.fps
         self.start_time = now
         self.frame_time = now - self.frame_start_time
@@ -139,17 +109,17 @@ class Face_Recognizer:
     #  cv2 window / putText on cv2 window
     def draw_note(self, img_rd):
         #  / Add some info on windows
-        cv2.putText(img_rd, "FIS - Izdihar Campus - Middle&High School - Boys - Camera G1", (20, 40), self.font, 1.5, (0, 0, 0), 3, cv2.LINE_AA)
-        cv2.putText(img_rd, "Frame:  " + str(self.frame_cnt), (20, 100), self.font, 0.8, (0, 0, 0), 1,
+        cv2.putText(img_rd, "Face Recognizer with Deep Learning", (20, 40), self.font, 1, (255, 255, 255), 1, cv2.LINE_AA)
+        cv2.putText(img_rd, "Frame:  " + str(self.frame_cnt), (20, 100), self.font, 0.8, (0, 255, 0), 1,
                     cv2.LINE_AA)
-        cv2.putText(img_rd, "FPS:    " + str(self.fps.__round__(2)), (20, 130), self.font, 0.8, (0, 0, 0), 1,
+        cv2.putText(img_rd, "FPS:    " + str(self.fps.__round__(2)), (20, 130), self.font, 0.8, (0, 255, 0), 1,
                     cv2.LINE_AA)
-        cv2.putText(img_rd, "Student count:  " + str(self.current_frame_face_cnt), (20, 160), self.font, 0.8, (0, 0, 255), 2,
+        cv2.putText(img_rd, "Faces:  " + str(self.current_frame_face_cnt), (20, 160), self.font, 0.8, (0, 255, 0), 1,
                     cv2.LINE_AA)
-        cv2.putText(img_rd, "Q: Quit", (20, 450), self.font, 0.8, (255, 255, 255), 2, cv2.LINE_AA)
+        cv2.putText(img_rd, "Q: Quit", (20, 450), self.font, 0.8, (255, 255, 255), 1, cv2.LINE_AA)
 
         for i in range(len(self.current_frame_face_name_list)):
-            img_rd = cv2.putText(img_rd, "Student_" + str(i + 1), tuple(
+            img_rd = cv2.putText(img_rd, "Face_" + str(i + 1), tuple(
                 [int(self.current_frame_face_centroid_list[i][0]), int(self.current_frame_face_centroid_list[i][1])]),
                                  self.font,
                                  0.8, (255, 190, 0),
@@ -317,7 +287,6 @@ class Face_Recognizer:
     
 
 
-# self.process(cap of all 16 cameras)
     def run(self):
         # cap = cv2.VideoCapture("video.mp4")  # Get video stream from video file
         cap = cv2.VideoCapture(0)              # Get video stream from camera
