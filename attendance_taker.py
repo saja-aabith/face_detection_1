@@ -42,9 +42,9 @@ class Face_Recognizer:
         self.face_features_known_list = []
         self.face_name_known_list = []
         # IP camera settings
-        self.ip_camera_url = "rtsp://192.168.8.89:554/stream1"
-        self.username = "admin123"
-        self.password = "password123"
+        # self.ip_camera_url = "rtsp://192.168.8.89:554/stream1"
+        # self.username = "admin123"
+        # self.password = "password123"
         self.cap = None
         self.current_frame_face_cnt = 0
         self.last_frame_face_cnt = 0
@@ -53,6 +53,7 @@ class Face_Recognizer:
         self.current_frame_face_centroid_list = []
         self.fps = 0
         self.reclassify_interval = 10  # Initialize reclassify_interval with an appropriate value
+        self.reclassify_interval_cnt = 0
         
     #  "features_all.csv"  / Get known faces from "features_all.csv"
     def get_face_database(self):
