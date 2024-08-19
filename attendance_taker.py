@@ -41,8 +41,8 @@ class Face_Recognizer:
         self.frame_cnt = 0
         self.face_features_known_list = []
         self.face_name_known_list = []
-        # IP camera settings
-        # self.ip_camera_url = "rtsp://192.168.8.89:554/stream1"
+        #IP camera settings
+        self.ip_camera_url = "rtsp://admin123:password123@192.168.186.244:554/stream1"
         # self.username = "admin123"
         # self.password = "password123"
         self.cap = None
@@ -55,6 +55,22 @@ class Face_Recognizer:
         self.reclassify_interval = 10  # Initialize reclassify_interval with an appropriate value
         self.reclassify_interval_cnt = 0
         
+        
+        def get_frame(self):
+            if self.cap is None:
+                # Construct the RTSP URL with authentication
+                # auth_url = f"rtsp://{self.username}:{self.password}@{self.ip_camera_url.split('//')[1]}"
+                # print(f"Attempting to connect with URL: {auth_url}")
+                self.cap = cv2.VideoCapture(self.ip_camera_url)
+
+            ret, frame = self.cap.read()
+            if ret:
+                frame = cv2.resize(frame, (640, 480))
+                return True, cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            else:
+                print("Error: Could not read frame.")
+                return False, None
+            
     #  "features_all.csv"  / Get known faces from "features_all.csv"
     def get_face_database(self):
         if os.path.exists("data/features_all.csv"):
@@ -290,9 +306,10 @@ class Face_Recognizer:
 
     def run(self):
         # cap = cv2.VideoCapture("video.mp4")  # Get video stream from video file
-        cap = cv2.VideoCapture(0)              # Get video stream from camera
+        cap = cv2.VideoCapture(self.ip_camera_url)
+        # cap = cv2.VideoCapture(0)              # Get video stream from camera
         cap.set(cv2.CAP_PROP_FPS, 30)  # Set desired FPS
-        cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)  # Reduce buffer size to minimize latency
+        cap.set(cv2.CAP_PROP_BUFFERSIZE, 0)  # Reduce buffer size to minimize latency
         self.process(cap)
 
         cap.release()
@@ -310,3 +327,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+    

@@ -20,7 +20,7 @@ class Face_Register:
 
         # Tkinter GUI setup
         self.win = tk.Tk()
-        self.win.title("Face Register")
+        self.win.title("Student Register")
         self.win.geometry("1000x500")
 
         # GUI left part (camera feed)
@@ -133,16 +133,12 @@ class Face_Register:
             os.mkdir(self.path_photos_from_camera)
 
     def check_existing_faces_cnt(self):
-        # Count existing face folders
         person_num_list = []
         for person_order in os.listdir(self.path_photos_from_camera):
-            try:
-                person_num_list.append(int(person_order.split('_')[1]))
-                self.existing_faces_cnt = max(person_num_list) if person_num_list else 0
-            except Exception as e:
-                # Handle the specific exception
-                logging.error("An error occurred: %s", str(e))
-                pass
+            parts = person_order.split('_')
+            if len(parts) >= 2 and parts[0] == "person" and parts[1].isdigit():
+                person_num_list.append(int(parts[1]))
+        self.existing_faces_cnt = max(person_num_list) if person_num_list else 0
 
     def create_face_folder(self):
         # Create a new folder for the current face
