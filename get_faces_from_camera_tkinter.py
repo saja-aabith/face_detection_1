@@ -17,7 +17,7 @@ class Face_Register:
     def __init__(self):
         self.current_frame_faces_cnt = 0  # Count of faces in current frame
         self.existing_faces_cnt = 0  # Count of saved faces
-        self.ss_cnt = 0  # Count for screen shots
+        self.ss_cnt = 0  # Count for screen shot
 
         # Tkinter GUI setup
         self.win = tk.Tk()
