@@ -1,3 +1,4 @@
+import dlib
 import cv2
 import numpy as np
 import os
@@ -7,7 +8,7 @@ import logging
 import tkinter as tk
 from tkinter import font as tkFont
 from PIL import Image, ImageTk
-import dlib
+
 
 # Use frontal face detector of Dlib
 detector = dlib.get_frontal_face_detector()

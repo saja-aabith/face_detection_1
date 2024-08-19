@@ -1,0 +1,8 @@
+dlib = 19.24.6
+numpy = 2.0.1
+cv2 = 4.10.0
+os = ???
+pandas = 2.2.0
+logging = 0.5.1.2
+flask = ???
+PIL = 10.4.0

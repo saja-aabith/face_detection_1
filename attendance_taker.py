@@ -9,6 +9,7 @@ import sqlite3
 import datetime
 
 
+
 # Dlib  / Use frontal face detector of Dlib
 detector = dlib.get_frontal_face_detector()
 
@@ -65,7 +66,7 @@ class Face_Recognizer:
 
             ret, frame = self.cap.read()
             if ret:
-                frame = cv2.resize(frame, (640, 480))
+                frame = cv2.resize(frame, (320, 240))
                 return True, cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             else:
                 print("Error: Could not read frame.")
@@ -126,7 +127,7 @@ class Face_Recognizer:
     #  cv2 window / putText on cv2 window
     def draw_note(self, img_rd):
         #  / Add some info on windows
-        cv2.putText(img_rd, "FIS - Izdihar Campus - Middle&High School - Boys - Camera G1", (20, 40), self.font, 1.5, (0, 0, 0), 3, cv2.LINE_AA)
+        cv2.putText(img_rd, "FIS - Izdihar Campus - Middle&High School - Boys - Camera G1", (20, 40), self.font, 1, (0, 0, 0), 3, cv2.LINE_AA)
         cv2.putText(img_rd, "Frame:  " + str(self.frame_cnt), (20, 100), self.font, 0.8, (0, 0, 0), 2,
                     cv2.LINE_AA)
         cv2.putText(img_rd, "FPS:    " + str(self.fps.__round__(2)), (20, 130), self.font, 0.8, (0, 0, 0), 2,
@@ -305,9 +306,7 @@ class Face_Recognizer:
 
 
     def run(self):
-        # cap = cv2.VideoCapture("video.mp4")  # Get video stream from video file
         cap = cv2.VideoCapture(self.ip_camera_url)
-        # cap = cv2.VideoCapture(0)              # Get video stream from camera
         cap.set(cv2.CAP_PROP_FPS, 30)  # Set desired FPS
         cap.set(cv2.CAP_PROP_BUFFERSIZE, 0)  # Reduce buffer size to minimize latency
         self.process(cap)
