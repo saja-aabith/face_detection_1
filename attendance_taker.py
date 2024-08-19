@@ -9,6 +9,7 @@ import sqlite3
 import datetime
 
 
+
 # Dlib  / Use frontal face detector of Dlib
 detector = dlib.get_frontal_face_detector()
 
