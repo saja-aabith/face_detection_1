@@ -43,7 +43,7 @@ class Face_Recognizer:
         self.face_features_known_list = []
         self.face_name_known_list = []
         #IP camera settings
-        self.ip_camera_url = "rtsp://admin123:password123@192.168.186.244:554/stream1"
+        self.ip_camera_url = "rtsp://admin123:password123@192.168.232.244:554/stream1"
         # self.username = "admin123"
         # self.password = "password123"
         self.cap = None

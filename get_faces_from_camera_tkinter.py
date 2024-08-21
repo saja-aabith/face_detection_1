@@ -73,7 +73,7 @@ class Face_Register:
         self.start_time = time.time()
 
         # IP camera settings
-        self.ip_camera_url = "rtsp://192.168.186.244:554/stream1"  # Update this URL with your camera's address
+        self.ip_camera_url = "rtsp://192.168.232.244:554/stream1"  # Update this URL with your camera's address
         self.username = "admin123"  # Update with your camera's username
         self.password = "password123"  # Update with your camera's password
         self.cap = None  # Will be initialized in get_frame method
